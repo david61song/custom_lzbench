@@ -1,3 +1,9 @@
+Acknowledgement
+-------------------------
+This cloned lzbench repository is intended for comparing compression benchmarks between software algorithms and hardware-accelerated algorithms. Modified by @david61song.
+
+The Intel QPL library has been added to enable the use of hardware-accelerated algorithms.
+
 Introduction
 -------------------------
 
