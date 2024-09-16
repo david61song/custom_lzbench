@@ -1964,3 +1964,16 @@ int64_t lzbench_nvcomp_decompress(char *inbuf, size_t insize, char *outbuf, size
 #endif  // BENCH_HAS_NVCOMP
 
 #endif  // BENCH_HAS_CUDA
+
+
+/* Intel In-Memory-Accelerator */
+
+#ifdef BENCH_HAS_IAA
+
+
+
+
+
+
+
+#endif

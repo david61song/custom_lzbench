@@ -310,6 +310,23 @@ ifneq "$(DONT_BUILD_NVCOMP)" "1"
 endif
 endif
 
+
+QPL_BASE ?= /usr/local/qpl
+LIBQPL=$(wildcard $(QPL_BASE)/lib64/libqpl.a)
+
+ifneq "$(LIBQPL)" ""
+    DEFINES += -DBENCH_HAS_IAA -I$(QPL_BASE)/include
+    LDFLAGS += -L$(QPL_BASE)/lib64 -lqpl -Wl,-rpath=$(QPL_BASE)/lib64
+    QPL_CFLAGS = 
+else
+    $(info Intel QPL Library is not found at $(QPL_BASE), QPL support will be disabled.)
+    $(info Run "make QPL_BASE=..." to use a different path.)
+    QPL_BASE =
+    LIBQPL =
+endif
+
+
+
 all: lzbench
 
 MKDIR = mkdir -p
