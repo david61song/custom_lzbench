@@ -74,7 +74,7 @@ endif
 
 DEFINES     += $(addprefix -I$(SOURCE_PATH),. brotli/include libcsc libdeflate xpack/common xz xz/api xz/check xz/common xz/lz xz/lzma xz/rangecoder zstd/lib zstd/lib/common)
 DEFINES     += -DHAVE_CONFIG_H -DFL2_SINGLETHREAD
-CODE_FLAGS  += -Wno-unknown-pragmas -Wno-sign-compare -Wno-conversion
+CODE_FLAGS  += -Wno-unknown-pragmas -Wno-sign-compare -Wno-conversion -g
 OPT_FLAGS   ?= -fomit-frame-pointer -fstrict-aliasing -ffast-math
 
 
@@ -312,10 +312,10 @@ endif
 
 
 QPL_BASE ?= /usr/local/qpl
-LIBQPL=$(wildcard $(QPL_BASE)/lib64/libqpl.a)
+LIBQPL=$(wildcard $(QPL_BASE)/lib/libqpl.a)
 
 ifneq "$(LIBQPL)" ""
-    DEFINES += -DBENCH_HAS_IAA -I$(QPL_BASE)/include
+    DEFINES += -DBENCH_HAS_IAA -I$(QPL_BASE)/include/qpl
     LDFLAGS += -L$(QPL_BASE)/lib64 -lqpl -Wl,-rpath=$(QPL_BASE)/lib64
     QPL_CFLAGS = 
 else
