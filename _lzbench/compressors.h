@@ -524,6 +524,7 @@ int64_t lzbench_return_0(char *inbuf, size_t insize, char *outbuf, size_t outsiz
 		char* lzbench_IAA_deflate_fixed_init(size_t insize, size_t, size_t);
 		int64_t lzbench_IAA_deflate_fixed_compress(char *inbuf, size_t insize, char *outbuf, size_t outsize, size_t, size_t, char* workmem);
 		int64_t lzbench_IAA_deflate_fixed_decompress(char *inbuf, size_t insize, char *outbuf, size_t outsize, size_t, size_t, char* workmem);
+		void lzbench_IAA_deflate_fixed_deinit(char* workmem);
 #else
 		#define lzbench_IAA_deflate_fixed_init NULL
 		#define lzbench_IAA_deflate_fixed_compress NULL

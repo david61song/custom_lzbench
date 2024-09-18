@@ -1975,86 +1975,98 @@ int64_t lzbench_nvcomp_decompress(char *inbuf, size_t insize, char *outbuf, size
 
 
 /* Allocate new parameters for hardware accelerated compression algorithm */
+/* WARNING: This function is called only once! */
+
 char* lzbench_IAA_deflate_fixed_init(size_t insize, size_t, size_t)
 {
     qpl_status status;
-    qpl_path_t execution_path = qpl_path_software; //fixed to hardware path
-    uint32_t size = 0;
+    qpl_path_t execution_path = qpl_path_software; // Use hardware path for IAA
+    uint32_t job_size = 0;
     qpl_job* job = NULL;
 
-    printf("Intel(R) Query Processing Library version is %s.\n", qpl_get_library_version());
-
-    // Getting job size
-    status = qpl_get_job_size(execution_path, &size);
+    // Get the size of the job structure
+    status = qpl_get_job_size(execution_path, &job_size);
     if (status != QPL_STS_OK) {
-        printf("An error acquired during job size getting. Error status = %d\n", status);
+        fprintf(stderr, "Error getting QPL job size: %d\n", status);
+        return NULL;
     }
 
-    job = (qpl_job*)malloc(size);
-    status = qpl_init_job(execution_path, job);
+    // Allocate memory for the job structure
+    job = (qpl_job*)malloc(job_size);
+    if (!job) {
+        fprintf(stderr, "Failed to allocate memory for QPL job\n");
+        return NULL;
+    }
 
+    // Initialize the job structure
+    status = qpl_init_job(execution_path, job);
     if (status != QPL_STS_OK) {
-        printf("An error acquired during IAA job (QPL) initializing! Error status = <%d> Did you set your accelerator? \n", status);
-        qpl_fini_job(job);
+        fprintf(stderr, "Error initializing QPL job: %d\n", status);
         free(job);
         return NULL;
     }
 
-    /* Fixed mode job structure */
-    job->op            = qpl_op_compress;
-    job->level         = qpl_default_level;   // Currently Hardware path is only supported with level 1
-    job->next_in_ptr   = NULL; // Need to set
-    job->available_in  = insize;
-    job->next_out_ptr  = NULL; // Need to set 
-    job->available_out = insize * 4;
-    job->flags         = QPL_FLAG_FIRST | QPL_FLAG_LAST;
-    job->huffman_table = NULL;
-
-    return (char *)job;
+    // Return the job structure as the work memory
+    return (char*)job;
 }
+
 
 int64_t lzbench_IAA_deflate_fixed_compress(char *inbuf, size_t insize, char *outbuf, size_t outsize, size_t, size_t, char* workmem)
 {
-    qpl_job* job = (qpl_job *)workmem;
+    qpl_job* job = (qpl_job*)workmem;
     qpl_status status;
-    uint32_t compressed_size;
 
-    job->next_in_ptr = (uint8_t *) inbuf;
-    job->next_out_ptr = (uint8_t *) outbuf;
+    // Set up the job for compression
+    job->op            = qpl_op_compress;
+    job->level         = qpl_level_1;
+    job->next_in_ptr   = (uint8_t*)inbuf;
+    job->available_in  = (uint32_t)insize;
+    job->next_out_ptr  = (uint8_t*)outbuf;
+    job->available_out = (uint32_t)outsize;
+    job->flags         = QPL_FLAG_FIRST | QPL_FLAG_LAST | QPL_FLAG_OMIT_VERIFY;
 
+    // Execute the compression job
     status = qpl_execute_job(job);
     if (status != QPL_STS_OK) {
-        printf("An Error acquired during compression! Error: %d\n", status);
+        fprintf(stderr, "Error during QPL compression: %d\n", status);
         return 0;
     }
 
-    compressed_size = job->total_out;
-
-    return compressed_size;
+    // Return the size of the compressed data
+    return (int64_t)job->total_out;
 }
 
 int64_t lzbench_IAA_deflate_fixed_decompress(char *inbuf, size_t insize, char *outbuf, size_t outsize, size_t, size_t, char* workmem)
 {
-    qpl_job* job = (qpl_job *)workmem;
+    qpl_job* job = (qpl_job*)workmem;
     qpl_status status;
-    uint32_t decompressed_size;
 
+    // Set up the job for decompression
     job->op            = qpl_op_decompress;
-    job->next_in_ptr   = (uint8_t *) inbuf;
-    job->next_out_ptr  = (uint8_t *) outbuf;
-    job->available_in  = insize;
-    job->available_out = outsize;
-    job->flags         = QPL_FLAG_FIRST | QPL_FLAG_LAST;
+    job->level         = qpl_level_1;
+    job->next_in_ptr   = (uint8_t*)inbuf;
+    job->available_in  = (uint32_t)insize;
+    job->next_out_ptr  = (uint8_t*)outbuf;
+    job->available_out = (uint32_t)outsize;
+    job->flags         = QPL_FLAG_FIRST | QPL_FLAG_LAST | QPL_FLAG_OMIT_VERIFY;
 
+    // Execute the decompression job
     status = qpl_execute_job(job);
     if (status != QPL_STS_OK) {
-        printf("An Error acquired during de-compression! Error: %d\n", status);
+        fprintf(stderr, "Error during QPL decompression: %d\n", status);
         return 0;
     }
 
-    decompressed_size = job->total_out;
+    // Return the size of the decompressed data
+    return (int64_t)job->total_out;
+}
 
-    return decompressed_size;
+void lzbench_IAA_deflate_fixed_deinit(char* workmem) {
+    qpl_job* job = (qpl_job*)workmem;
+    if (job) {
+        qpl_fini_job(job);
+        free(job);
+    }
 }
 
 
