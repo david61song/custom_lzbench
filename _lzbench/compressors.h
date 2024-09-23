@@ -521,14 +521,27 @@ int64_t lzbench_return_0(char *inbuf, size_t insize, char *outbuf, size_t outsiz
 #endif
 
 #ifdef BENCH_HAS_IAA
-		char* lzbench_IAA_deflate_fixed_init(size_t insize, size_t, size_t);
+		char* lzbench_IAA_deflate_init(size_t insize, size_t, size_t);
+		char* lzbench_IAA_deflate_canned_init(size_t insize, size_t, size_t);
+		void lzbench_IAA_deflate_deinit(char* workmem);
+		void lzbench_IAA_deflate_canned_deinit(char* workmem);
 		int64_t lzbench_IAA_deflate_fixed_compress(char *inbuf, size_t insize, char *outbuf, size_t outsize, size_t, size_t, char* workmem);
 		int64_t lzbench_IAA_deflate_fixed_decompress(char *inbuf, size_t insize, char *outbuf, size_t outsize, size_t, size_t, char* workmem);
-		void lzbench_IAA_deflate_fixed_deinit(char* workmem);
+		int64_t lzbench_IAA_deflate_dynamic_compress(char *inbuf, size_t insize, char *outbuf, size_t outsize, size_t, size_t, char* workmem);
+		int64_t lzbench_IAA_deflate_dynamic_decompress(char *inbuf, size_t insize, char *outbuf, size_t outsize, size_t, size_t, char* workmem);
+		int64_t lzbench_IAA_deflate_canned_compress(char *inbuf, size_t insize, char *outbuf, size_t outsize, size_t, size_t, char* workmem);
+		int64_t lzbench_IAA_deflate_canned_decompress(char *inbuf, size_t insize, char *outbuf, size_t outsize, size_t, size_t, char* workmem);
 #else
-		#define lzbench_IAA_deflate_fixed_init NULL
+		#define lzbench_IAA_deflate_init NULL
+		#define lzbench_IAA_deflate_canned_init NULL
+		#define lzbench_IAA_deflate_deinit NULL
+		#define lzbench_IAA_deflate_canned_deinit NULL
 		#define lzbench_IAA_deflate_fixed_compress NULL
 		#define lzbench_IAA_deflate_fixed_decompress NULL
+		#define lzbench_IAA_deflate_dynamic_compress NULL
+		#define lzbench_IAA_deflate_dynamic_decompress NULL
+		#define lzbench_IAA_deflate_canned_compress NULL
+		#define lzbench_IAA_deflate_canned_decompress NULL
 #endif
 
 #endif // LZBENCH_COMPRESSORS_H

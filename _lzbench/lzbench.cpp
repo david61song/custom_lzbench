@@ -912,6 +912,7 @@ int main( int argc, char** argv)
             printf("opt - compressors with optimal parsing (slow compression, fast decompression)\n");
             printf("lzo / ucl - aliases for all levels of given compressors\n");
             printf("cuda - alias for all CUDA-based compressors\n");
+            printf("iaa - Using intel QPL Library. Define IAA_PATH_HARDWARE to use Intel® In-Memory Analytics Accelerator (Intel® IAA) \n");
             for (int i=1; i<LZBENCH_COMPRESSOR_COUNT; i++)
             {
                 if (comp_desc[i].compress)

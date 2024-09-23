@@ -1966,108 +1966,56 @@ int64_t lzbench_nvcomp_decompress(char *inbuf, size_t insize, char *outbuf, size
 #endif  // BENCH_HAS_CUDA
 
 
-/* For Intel® In-Memory Analytics Accelerator (QPL)*/
+/* For Intel® In-Memory Analytics Accelerator Using QPL */
 // Async mode for benchmarking
 
 #ifdef BENCH_HAS_IAA
 
-#include <qpl.h>
+#include "iaa/iaa.h"
 
+char* lzbench_IAA_deflate_init(size_t insize, size_t, size_t){
+    return IAA_deflate_init(insize);
+}
 
-/* Allocate new parameters for hardware accelerated compression algorithm */
-/* WARNING: This function is called only once! */
-
-char* lzbench_IAA_deflate_fixed_init(size_t insize, size_t, size_t)
-{
-    qpl_status status;
-    qpl_path_t execution_path = qpl_path_software; // Use hardware path for IAA
-    uint32_t job_size = 0;
-    qpl_job* job = NULL;
-
-    // Get the size of the job structure
-    status = qpl_get_job_size(execution_path, &job_size);
-    if (status != QPL_STS_OK) {
-        fprintf(stderr, "Error getting QPL job size: %d\n", status);
-        return NULL;
-    }
-
-    // Allocate memory for the job structure
-    job = (qpl_job*)malloc(job_size);
-    if (!job) {
-        fprintf(stderr, "Failed to allocate memory for QPL job\n");
-        return NULL;
-    }
-
-    // Initialize the job structure
-    status = qpl_init_job(execution_path, job);
-    if (status != QPL_STS_OK) {
-        fprintf(stderr, "Error initializing QPL job: %d\n", status);
-        free(job);
-        return NULL;
-    }
-
-    // Return the job structure as the work memory
-    return (char*)job;
+char* lzbench_IAA_deflate_canned_init(size_t insize, size_t, size_t){
+    return IAA_deflate_canned_init(insize);
 }
 
 
-int64_t lzbench_IAA_deflate_fixed_compress(char *inbuf, size_t insize, char *outbuf, size_t outsize, size_t, size_t, char* workmem)
-{
-    qpl_job* job = (qpl_job*)workmem;
-    qpl_status status;
-
-    // Set up the job for compression
-    job->op            = qpl_op_compress;
-    job->level         = qpl_level_1;
-    job->next_in_ptr   = (uint8_t*)inbuf;
-    job->available_in  = (uint32_t)insize;
-    job->next_out_ptr  = (uint8_t*)outbuf;
-    job->available_out = (uint32_t)outsize;
-    job->flags         = QPL_FLAG_FIRST | QPL_FLAG_LAST | QPL_FLAG_OMIT_VERIFY;
-
-    // Execute the compression job
-    status = qpl_execute_job(job);
-    if (status != QPL_STS_OK) {
-        fprintf(stderr, "Error during QPL compression: %d\n", status);
-        return 0;
-    }
-
-    // Return the size of the compressed data
-    return (int64_t)job->total_out;
+void lzbench_IAA_deflate_canned_deinit(char *workmem){
+    IAA_deflate_canned_deinit(workmem);
 }
 
-int64_t lzbench_IAA_deflate_fixed_decompress(char *inbuf, size_t insize, char *outbuf, size_t outsize, size_t, size_t, char* workmem)
-{
-    qpl_job* job = (qpl_job*)workmem;
-    qpl_status status;
-
-    // Set up the job for decompression
-    job->op            = qpl_op_decompress;
-    job->level         = qpl_level_1;
-    job->next_in_ptr   = (uint8_t*)inbuf;
-    job->available_in  = (uint32_t)insize;
-    job->next_out_ptr  = (uint8_t*)outbuf;
-    job->available_out = (uint32_t)outsize;
-    job->flags         = QPL_FLAG_FIRST | QPL_FLAG_LAST | QPL_FLAG_OMIT_VERIFY;
-
-    // Execute the decompression job
-    status = qpl_execute_job(job);
-    if (status != QPL_STS_OK) {
-        fprintf(stderr, "Error during QPL decompression: %d\n", status);
-        return 0;
-    }
-
-    // Return the size of the decompressed data
-    return (int64_t)job->total_out;
+void lzbench_IAA_deflate_deinit(char *workmem){
+    IAA_deflate_deinit(workmem);
 }
 
-void lzbench_IAA_deflate_fixed_deinit(char* workmem) {
-    qpl_job* job = (qpl_job*)workmem;
-    if (job) {
-        qpl_fini_job(job);
-        free(job);
-    }
+int64_t lzbench_IAA_deflate_fixed_compress(char *inbuf, size_t insize, char *outbuf, size_t outsize, size_t, size_t, char* workmem){
+    return IAA_deflate_fixed_compress(inbuf, insize, outbuf, outsize, workmem);
 }
+
+int64_t lzbench_IAA_deflate_fixed_decompress(char *inbuf, size_t insize, char *outbuf, size_t outsize, size_t, size_t, char* workmem){
+    return IAA_deflate_fixed_decompress(inbuf, insize, outbuf, outsize, workmem);
+}
+
+int64_t lzbench_IAA_deflate_dynamic_compress(char *inbuf, size_t insize, char *outbuf, size_t outsize, size_t, size_t, char* workmem){
+    return IAA_deflate_dynamic_compress(inbuf, insize, outbuf, outsize, workmem);
+}
+
+int64_t lzbench_IAA_deflate_dynamic_decompress(char *inbuf, size_t insize, char *outbuf, size_t outsize, size_t, size_t, char* workmem){
+    return IAA_deflate_dynamic_decompress(inbuf, insize, outbuf, outsize, workmem);
+}
+
+int64_t lzbench_IAA_deflate_canned_compress(char *inbuf, size_t insize, char *outbuf, size_t outsize, size_t, size_t, char* workmem){
+    return IAA_deflate_canned_compress(inbuf, insize, outbuf, outsize, workmem);
+}
+
+int64_t lzbench_IAA_deflate_canned_decompress(char *inbuf, size_t insize, char *outbuf, size_t outsize, size_t, size_t, char* workmem){
+    return IAA_deflate_canned_decompress(inbuf, insize, outbuf, outsize, workmem);
+}
+
+
+
 
 
 
